@@ -452,11 +452,31 @@ public:
     }
     
     T& operator[](const size_t &pos) {
-        return at(pos);
+        size_t current_pos = 0;
+        Block* current = head;
+        while (current) {
+            if (current_pos + current->size > pos) {
+                return current->data[pos - current_pos];
+            }
+            current_pos += current->size;
+            current = current->next;
+        }
+        // Undefined behavior if out of range, but return something
+        return head->data[0];
     }
     
     const T& operator[](const size_t &pos) const {
-        return at(pos);
+        size_t current_pos = 0;
+        Block* current = head;
+        while (current) {
+            if (current_pos + current->size > pos) {
+                return current->data[pos - current_pos];
+            }
+            current_pos += current->size;
+            current = current->next;
+        }
+        // Undefined behavior if out of range, but return something
+        return head->data[0];
     }
     
     const T& front() const {
