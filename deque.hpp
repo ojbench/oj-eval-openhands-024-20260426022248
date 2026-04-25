@@ -539,8 +539,13 @@ public:
         Block* new_block = new Block();
         size_t mid = block->size / 2;
         
+        // Move elements from mid to end to new block
         for (size_t i = mid; i < block->size; ++i) {
-            new_block->push_back(block->data[i]);
+            new (&new_block->data[new_block->size]) T(block->data[i]);
+            ++new_block->size;
+        }
+        // Destroy moved elements and update size
+        for (size_t i = mid; i < block->size; ++i) {
             block->data[i].~T();
         }
         block->size = mid;
