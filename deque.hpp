@@ -19,11 +19,11 @@ private:
         Block* next;
         
         Block() : data(nullptr), size(0), capacity(BLOCK_SIZE), prev(nullptr), next(nullptr) {
-            data = new T[capacity];
+            data = reinterpret_cast<T*>(::operator new(capacity * sizeof(T)));
         }
         
         Block(size_t cap) : data(nullptr), size(0), capacity(cap), prev(nullptr), next(nullptr) {
-            data = new T[capacity];
+            data = reinterpret_cast<T*>(::operator new(capacity * sizeof(T)));
         }
         
         ~Block() {
@@ -31,12 +31,12 @@ private:
                 for (size_t i = 0; i < size; ++i) {
                     data[i].~T();
                 }
-                delete[] data;
+                ::operator delete(data);
             }
         }
         
         Block(const Block& other) : data(nullptr), size(other.size), capacity(other.capacity), prev(nullptr), next(nullptr) {
-            data = new T[capacity];
+            data = reinterpret_cast<T*>(::operator new(capacity * sizeof(T)));
             for (size_t i = 0; i < size; ++i) {
                 new (&data[i]) T(other.data[i]);
             }
