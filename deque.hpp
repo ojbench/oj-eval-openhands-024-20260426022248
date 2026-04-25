@@ -54,8 +54,10 @@ private:
             if (size >= capacity) {
                 throw std::runtime_error("Block full");
             }
+            // Move existing elements
             for (size_t i = size; i > 0; --i) {
-                data[i] = data[i - 1];
+                new (&data[i]) T(data[i - 1]);
+                data[i - 1].~T();
             }
             new (&data[0]) T(value);
             ++size;
@@ -75,7 +77,8 @@ private:
             }
             data[0].~T();
             for (size_t i = 0; i < size - 1; ++i) {
-                data[i] = data[i + 1];
+                new (&data[i]) T(data[i + 1]);
+                data[i + 1].~T();
             }
             --size;
         }
@@ -524,9 +527,10 @@ public:
         
         if (block->size < block->capacity) {
             for (size_t i = block->size; i > index; --i) {
-                block->data[i] = block->data[i - 1];
+                new (&block->data[i]) T(block->data[i - 1]);
+                block->data[i - 1].~T();
             }
-            block->data[index] = value;
+            new (&block->data[index]) T(value);
             ++block->size;
             ++total_size;
             return iterator(block, index, this);
@@ -537,6 +541,7 @@ public:
         
         for (size_t i = mid; i < block->size; ++i) {
             new_block->push_back(block->data[i]);
+            block->data[i].~T();
         }
         block->size = mid;
         
@@ -551,18 +556,20 @@ public:
         
         if (index <= mid) {
             for (size_t i = block->size; i > index; --i) {
-                block->data[i] = block->data[i - 1];
+                new (&block->data[i]) T(block->data[i - 1]);
+                block->data[i - 1].~T();
             }
-            block->data[index] = value;
+            new (&block->data[index]) T(value);
             ++block->size;
             ++total_size;
             return iterator(block, index, this);
         } else {
             size_t new_index = index - mid;
             for (size_t i = new_block->size; i > new_index; --i) {
-                new_block->data[i] = new_block->data[i - 1];
+                new (&new_block->data[i]) T(new_block->data[i - 1]);
+                new_block->data[i - 1].~T();
             }
-            new_block->data[new_index] = value;
+            new (&new_block->data[new_index]) T(value);
             ++new_block->size;
             ++total_size;
             return iterator(new_block, new_index, this);
@@ -577,8 +584,10 @@ public:
         Block* block = pos.block;
         size_t index = pos.index;
         
+        block->data[index].~T();
         for (size_t i = index; i < block->size - 1; ++i) {
-            block->data[i] = block->data[i + 1];
+            new (&block->data[i]) T(block->data[i + 1]);
+            block->data[i + 1].~T();
         }
         --block->size;
         --total_size;
